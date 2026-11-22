@@ -1,0 +1,16 @@
+package com.nuera.banking.card.model.enums;
+
+public enum DeclineReason {
+    NONE,
+    INSUFFICIENT_FUNDS,
+    CARD_INACTIVE,
+    CARD_FROZEN,
+    CARD_BLOCKED,
+    INVALID_PIN,
+    PIN_ATTEMPTS_EXCEEDED,
+    PIN_TRIES_EXCEEDED,
+    DAILY_LIMIT_EXCEEDED,
+    EXCEEDS_DAILY_LIMIT,
+    ACCOUNT_INACTIVE,
+    INVALID_CARD_DETAILS
+}

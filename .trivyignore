@@ -1,0 +1,4 @@
+# Spring Framework 6.2.19 (spring-webmvc): no fix on the 6.2 line, fixed only in 7.0.9 (Spring Boot 4.0).
+# Accepted for the Spring Boot 3.5 upgrade (KAN-10). Remove when the service moves to Spring Boot 4.0.
+CVE-2026-47884 exp:2027-01-31
+CVE-2026-47890 exp:2027-01-31

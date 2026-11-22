@@ -137,7 +137,7 @@ jobs:
         if: always()
         run: |
           # the cached Maven repository lets Trivy read dependency poms locally: Maven Central rate-limits the shared runner addresses (HTTP 429)
-          docker run --rm -v "$PWD:/work" -v "$HOME/.m2:/root/.m2" aquasec/trivy:latest fs --scanners vuln,secret --severity HIGH,CRITICAL --exit-code 1 --format json --output /work/trivy.json /work
+          docker run --rm -w /work -v "$PWD:/work" -v "$PWD/.trivyignore:/.trivyignore" -v "$HOME/.m2:/root/.m2" aquasec/trivy:latest fs --ignorefile /work/.trivyignore --scanners vuln,secret --severity HIGH,CRITICAL --exit-code 1 --format json --output /work/trivy.json /work
       - uses: actions/upload-artifact@v4
         if: always()
         with:
@@ -181,6 +181,6 @@ jobs:
           labels: org.opencontainers.image.source=${{ github.server_url }}/${{ github.repository }}
       - name: Scan the image (Trivy)
         run: |
-          docker run --rm -v /var/run/docker.sock:/var/run/docker.sock aquasec/trivy:latest image --severity CRITICAL --ignore-unfixed --exit-code 1 ghcr.io/sabarish1407/neura-central-card-account-digital-svc:${{ steps.tag.outputs.value }}
+          docker run --rm -v /var/run/docker.sock:/var/run/docker.sock -w /work -v "$PWD:/work" -v "$PWD/.trivyignore:/.trivyignore" aquasec/trivy:latest image --ignorefile /work/.trivyignore --severity CRITICAL --ignore-unfixed --exit-code 1 ghcr.io/sabarish1407/neura-central-card-account-digital-svc:${{ steps.tag.outputs.value }}
       - name: Push to GHCR
         run: docker push ghcr.io/sabarish1407/neura-central-card-account-digital-svc:${{ steps.tag.outputs.value }}

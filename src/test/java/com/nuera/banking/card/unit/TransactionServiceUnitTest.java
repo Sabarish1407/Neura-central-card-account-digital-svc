@@ -1,8 +1,10 @@
 package com.nuera.banking.card.unit;
 
+import com.nuera.banking.card.model.dto.RiskAssessmentResponse;
 import com.nuera.banking.card.model.dto.TransactionAuthorizationRequest;
 import com.nuera.banking.card.model.dto.TransactionAuthorizationResponse;
 import com.nuera.banking.card.model.enums.*;
+import com.nuera.banking.card.service.client.ExternalCardRiskClient;
 import com.nuera.banking.card.service.entity.AccountEntity;
 import com.nuera.banking.card.service.entity.CardEntity;
 import com.nuera.banking.card.service.entity.TransactionEntity;
@@ -40,6 +42,9 @@ class TransactionServiceUnitTest {
 
     @Mock
     private AccountRepository accountRepository;
+
+    @Mock
+    private ExternalCardRiskClient externalCardRiskClient;
 
     @InjectMocks
     private TransactionService transactionService;
@@ -81,6 +86,8 @@ class TransactionServiceUnitTest {
     @DisplayName("Authorize transaction successfully with correct PIN and sufficient balance")
     void testAuthorizeTransactionSuccess() {
         when(cardRepository.findByCardToken("tok-001")).thenReturn(Optional.of(activeCard));
+        when(externalCardRiskClient.assessTransactionRisk(any(), any(), any()))
+                .thenReturn(new RiskAssessmentResponse(true, 10, "LOW", "PASSED"));
         when(accountRepository.findById("acc-001")).thenReturn(Optional.of(fundedAccount));
         when(transactionRepository.findByCardIdAndStatusAndTimestampBetween(eq("card-001"), eq(TransactionStatus.APPROVED), any(), any()))
                 .thenReturn(Collections.emptyList());
@@ -147,6 +154,8 @@ class TransactionServiceUnitTest {
     @DisplayName("Decline transaction when exceeding daily spend limit")
     void testDeclineOnDailyLimitBreach() {
         when(cardRepository.findByCardToken("tok-001")).thenReturn(Optional.of(activeCard));
+        when(externalCardRiskClient.assessTransactionRisk(any(), any(), any()))
+                .thenReturn(new RiskAssessmentResponse(true, 10, "LOW", "PASSED"));
         // Already spent 900 today, limit is 1000
         TransactionEntity existingTx = new TransactionEntity();
         existingTx.setAmount(BigDecimal.valueOf(900.00));
@@ -175,6 +184,8 @@ class TransactionServiceUnitTest {
         fundedAccount.setAvailableBalance(BigDecimal.valueOf(50.00));
 
         when(cardRepository.findByCardToken("tok-001")).thenReturn(Optional.of(activeCard));
+        when(externalCardRiskClient.assessTransactionRisk(any(), any(), any()))
+                .thenReturn(new RiskAssessmentResponse(true, 10, "LOW", "PASSED"));
         when(accountRepository.findById("acc-001")).thenReturn(Optional.of(fundedAccount));
         when(transactionRepository.findByCardIdAndStatusAndTimestampBetween(eq("card-001"), eq(TransactionStatus.APPROVED), any(), any()))
                 .thenReturn(Collections.emptyList());
@@ -210,5 +221,27 @@ class TransactionServiceUnitTest {
 
         assertEquals(TransactionStatus.DECLINED, response.getStatus());
         assertEquals(DeclineReason.CARD_FROZEN, response.getDeclineReason());
+    }
+
+    @Test
+    @DisplayName("Decline transaction when external risk screening detects high fraud score")
+    void testDeclineOnFraudSuspicion() {
+        when(cardRepository.findByCardToken("tok-001")).thenReturn(Optional.of(activeCard));
+        when(externalCardRiskClient.assessTransactionRisk(any(), any(), any()))
+                .thenReturn(new RiskAssessmentResponse(false, 95, "HIGH", "SUSPICIOUS_MERCHANT"));
+        when(transactionRepository.save(any(TransactionEntity.class))).thenAnswer(i -> i.getArgument(0));
+
+        TransactionAuthorizationRequest request = new TransactionAuthorizationRequest();
+        request.setCardNumber("tok-001");
+        request.setPin("1234");
+        request.setAmount(BigDecimal.valueOf(500.00));
+        request.setCurrency("USD");
+        request.setMerchantName("High Risk Merchant");
+
+        TransactionAuthorizationResponse response = transactionService.authorizeTransaction(request);
+
+        assertEquals(TransactionStatus.DECLINED, response.getStatus());
+        assertEquals(DeclineReason.FRAUD_SUSPECTED, response.getDeclineReason());
+        assertTrue(response.getMessage().contains("SUSPICIOUS_MERCHANT"));
     }
 }

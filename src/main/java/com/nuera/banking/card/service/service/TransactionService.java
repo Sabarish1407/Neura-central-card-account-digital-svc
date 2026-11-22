@@ -1,9 +1,11 @@
 package com.nuera.banking.card.service.service;
 
+import com.nuera.banking.card.model.dto.RiskAssessmentResponse;
 import com.nuera.banking.card.model.dto.TransactionAuthorizationRequest;
 import com.nuera.banking.card.model.dto.TransactionAuthorizationResponse;
 import com.nuera.banking.card.model.dto.TransactionResponse;
 import com.nuera.banking.card.model.enums.*;
+import com.nuera.banking.card.service.client.ExternalCardRiskClient;
 import com.nuera.banking.card.service.entity.AccountEntity;
 import com.nuera.banking.card.service.entity.CardEntity;
 import com.nuera.banking.card.service.entity.TransactionEntity;
@@ -29,13 +31,16 @@ public class TransactionService {
     private final TransactionRepository transactionRepository;
     private final CardRepository cardRepository;
     private final AccountRepository accountRepository;
+    private final ExternalCardRiskClient externalCardRiskClient;
 
     public TransactionService(TransactionRepository transactionRepository,
                               CardRepository cardRepository,
-                              AccountRepository accountRepository) {
+                              AccountRepository accountRepository,
+                              ExternalCardRiskClient externalCardRiskClient) {
         this.transactionRepository = transactionRepository;
         this.cardRepository = cardRepository;
         this.accountRepository = accountRepository;
+        this.externalCardRiskClient = externalCardRiskClient;
     }
 
     /**
@@ -101,6 +106,22 @@ public class TransactionService {
                 card.setFailedPinAttempts(0);
                 card.setUpdatedAt(Instant.now());
                 cardRepository.save(card);
+            }
+        }
+
+        // 2b. External Risk Assessment (via Apache HttpClient 4)
+        if (externalCardRiskClient != null) {
+            RiskAssessmentResponse riskResponse = externalCardRiskClient.assessTransactionRisk(
+                    card.getCardId(), request.getAmount(), request.getMerchantName()
+            );
+            if (riskResponse != null && !riskResponse.isApproved()) {
+                TransactionEntity txn = recordDeclinedTransaction(card.getCardId(), card.getAccountId(), request, DeclineReason.FRAUD_SUSPECTED);
+                TransactionAuthorizationResponse resp = TransactionAuthorizationResponse.declined(
+                        DeclineReason.FRAUD_SUSPECTED, "Declined due to risk screening: " + riskResponse.getReasonCode(), txn.getTransactionId()
+                );
+                resp.setAmount(request.getAmount());
+                resp.setCurrency(request.getCurrency());
+                return resp;
             }
         }
 

@@ -22,16 +22,20 @@ public class EncryptionService {
 
     private final SecretKey secretKey;
 
-    public EncryptionService(@Value("${banking.security.card-encryption-key:c2VjdXJlX2JhbmtpbmdfZGViaXRfY2FyZF9rZXlfMjAyNg==}") String keySource) {
-        byte[] keyBytes = new byte[32];
-        try {
-            byte[] decoded = Base64.getDecoder().decode(keySource);
-            System.arraycopy(decoded, 0, keyBytes, 0, Math.min(decoded.length, 32));
-        } catch (IllegalArgumentException e) {
-            byte[] rawBytes = keySource.getBytes(StandardCharsets.UTF_8);
-            System.arraycopy(rawBytes, 0, keyBytes, 0, Math.min(rawBytes.length, 32));
+    public EncryptionService(@Value("${banking.security.card-encryption-key}") String keySource) {
+        if (keySource == null || keySource.trim().isEmpty()) {
+            throw new IllegalStateException("Card encryption key must not be blank");
         }
-        this.secretKey = new SecretKeySpec(keyBytes, "AES");
+        byte[] decoded;
+        try {
+            decoded = Base64.getDecoder().decode(keySource.trim());
+        } catch (IllegalArgumentException e) {
+            throw new IllegalStateException("Card encryption key must be valid Base64", e);
+        }
+        if (decoded.length != 32) {
+            throw new IllegalStateException("Card encryption key must decode to exactly 32 bytes (256 bits), but was " + decoded.length + " bytes");
+        }
+        this.secretKey = new SecretKeySpec(decoded, "AES");
     }
 
     public String encrypt(String plainText) {

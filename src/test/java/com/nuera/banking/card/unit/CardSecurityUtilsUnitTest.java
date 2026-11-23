@@ -11,7 +11,7 @@ import static org.junit.jupiter.api.Assertions.*;
 @DisplayName("Unit Tests: Card Security & Cryptographic Utilities")
 class CardSecurityUtilsUnitTest {
 
-    private final EncryptionService encryptionService = new EncryptionService("bankMasterKeySecretForAes256Gcm!123");
+    private final EncryptionService encryptionService = new EncryptionService("c2VjdXJlX2JhbmtpbmdfY2FyZF9rZXlfMjAyNl9hZXM=");
 
     @Test
     @DisplayName("BCrypt PIN hashing produces salted hash and verifies successfully")

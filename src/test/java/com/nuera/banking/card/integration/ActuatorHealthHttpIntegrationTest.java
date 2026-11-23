@@ -26,7 +26,7 @@ class ActuatorHealthHttpIntegrationTest {
     private TestRestTemplate restTemplate;
 
     @Test
-    @DisplayName("GET /actuator/health returns 200 OK with status UP")
+    @DisplayName("GET /actuator/health returns 200 OK with status UP and shows no details for anonymous caller")
     void testHealthEndpoint() {
         ResponseEntity<Map> response = restTemplate.getForEntity(
                 "http://localhost:" + port + "/actuator/health",
@@ -36,5 +36,7 @@ class ActuatorHealthHttpIntegrationTest {
         assertEquals(HttpStatus.OK, response.getStatusCode());
         assertNotNull(response.getBody());
         assertEquals("UP", response.getBody().get("status"));
+        assertNull(response.getBody().get("components"), "Components details must not be visible to anonymous callers");
+        assertNull(response.getBody().get("details"), "Details must not be visible to anonymous callers");
     }
 }

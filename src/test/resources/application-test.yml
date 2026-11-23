@@ -10,7 +10,6 @@ spring:
     username: sa
     password: 
   jpa:
-    database-platform: org.hibernate.dialect.H2Dialect
     hibernate:
       ddl-auto: create-drop
     show-sql: false
@@ -29,8 +28,8 @@ management:
         include: health,info,metrics
   endpoint:
     health:
-      show-details: always
+      show-details: when-authorized
 
 banking:
   security:
-    card-encryption-key: c2VjdXJlX2JhbmtpbmdfZGViaXRfY2FyZF9rZXlfMjAyNg==
+    card-encryption-key: c2VjdXJlX2JhbmtpbmdfY2FyZF9rZXlfMjAyNl9hZXM= # gitleaks:allow

@@ -22,18 +22,20 @@ public class CardController {
         this.cardService = cardService;
     }
 
-    @PostMapping("/issue")
+    @PostMapping({"", "/issue"})
     @Operation(summary = "Issue a VISA debit card on an active account")
     public ResponseEntity<CardResponse> issueDebitCard(@Valid @RequestBody CardIssuanceRequest request) {
         CardResponse response = cardService.issueDebitCard(request);
         return ResponseEntity.status(HttpStatus.CREATED).body(response);
     }
 
-    @PostMapping("/{cardId}/activate")
+    @PostMapping({"/activate", "/{cardId}/activate"})
     @Operation(summary = "Activate debit card with CVV and set 4-digit PIN (salted BCrypt hash)")
-    public ResponseEntity<CardResponse> activateDebitCard(@PathVariable String cardId,
+    public ResponseEntity<CardResponse> activateDebitCard(@PathVariable(required = false) String cardId,
                                                           @Valid @RequestBody CardActivationRequest request) {
-        request.setCardId(cardId);
+        if (cardId != null && !cardId.isEmpty()) {
+            request.setCardId(cardId);
+        }
         CardResponse response = cardService.activateDebitCard(request);
         return ResponseEntity.ok(response);
     }

@@ -4,20 +4,25 @@ import com.nuera.banking.card.model.enums.CardNetwork;
 import com.nuera.banking.card.model.enums.CardType;
 import jakarta.validation.constraints.DecimalMin;
 import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.Pattern;
+import jakarta.validation.constraints.Size;
 import java.math.BigDecimal;
 
 public class CardIssuanceRequest {
 
     @NotBlank(message = "Account ID is mandatory")
+    @Size(max = 64, message = "Account ID must be at most 64 characters")
     private String accountId;
 
     @NotBlank(message = "Cardholder name is mandatory")
+    @Size(max = 255, message = "Cardholder name must be at most 255 characters")
     private String cardHolderName;
 
     private CardType cardType = CardType.DEBIT;
 
     private CardNetwork cardNetwork = CardNetwork.VISA;
 
+    @Pattern(regexp = "^[A-Z]{3}$", message = "Currency must be a 3-letter ISO code such as USD")
     private String currency = "USD";
 
     @DecimalMin(value = "0.00", message = "Daily spending limit must be non-negative")

@@ -23,7 +23,7 @@ USER banking:banking
 COPY --from=builder /workspace/target/*.jar app.jar
 
 ENV SERVER_PORT=8081
-ENV SPRING_PROFILES_ACTIVE=test
+ENV SPRING_PROFILES_ACTIVE=demo
 EXPOSE 8081
 
 ENTRYPOINT ["java", "-Djava.security.egd=file:/dev/./urandom", "-jar", "app.jar"]

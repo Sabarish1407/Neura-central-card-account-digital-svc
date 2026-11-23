@@ -1,5 +1,6 @@
 package com.nuera.banking.card.model.dto;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.nuera.banking.card.model.enums.CardNetwork;
 import com.nuera.banking.card.model.enums.CardStatus;
 import com.nuera.banking.card.model.enums.CardType;
@@ -59,6 +60,7 @@ public class CardResponse {
         this.cardHolderName = cardHolderName;
     }
 
+    @JsonIgnore
     public String getCardholderName() {
         return cardHolderName;
     }
@@ -75,6 +77,7 @@ public class CardResponse {
         this.cardType = cardType;
     }
 
+    @JsonIgnore
     public CardType getType() {
         return cardType;
     }
@@ -91,6 +94,7 @@ public class CardResponse {
         this.cardNetwork = cardNetwork;
     }
 
+    @JsonIgnore
     public CardNetwork getNetwork() {
         return cardNetwork;
     }
@@ -115,6 +119,7 @@ public class CardResponse {
         this.cardStatus = cardStatus;
     }
 
+    @JsonIgnore
     public CardStatus getStatus() {
         return cardStatus;
     }

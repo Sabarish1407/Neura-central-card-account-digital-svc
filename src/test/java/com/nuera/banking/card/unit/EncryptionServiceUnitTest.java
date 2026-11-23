@@ -12,7 +12,7 @@ import static org.junit.jupiter.api.Assertions.*;
 @DisplayName("Unit Tests: EncryptionService AES-256-GCM")
 class EncryptionServiceUnitTest {
 
-    private static final String VALID_KEY_32_BYTES = "c2VjdXJlX2JhbmtpbmdfY2FyZF9rZXlfMjAyNl9hZXM=";
+    private static final String VALID_KEY_32_BYTES = "c2VjdXJlX2JhbmtpbmdfY2FyZF9rZXlfMjAyNl9hZXM="; // gitleaks:allow
 
     @Test
     @DisplayName("Encryption round-trips successfully")

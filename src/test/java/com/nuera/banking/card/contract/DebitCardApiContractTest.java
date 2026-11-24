@@ -1,7 +1,7 @@
 package com.nuera.banking.card.contract;
 
-import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.ObjectMapper;
+import tools.jackson.databind.JsonNode;
+import tools.jackson.databind.ObjectMapper;
 import com.nuera.banking.card.model.dto.*;
 import com.nuera.banking.card.model.enums.*;
 import org.junit.jupiter.api.BeforeEach;
@@ -9,8 +9,9 @@ import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.resttestclient.autoconfigure.AutoConfigureTestRestTemplate;
 import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.boot.test.web.client.TestRestTemplate;
+import org.springframework.boot.resttestclient.TestRestTemplate;
 import org.springframework.boot.test.web.server.LocalServerPort;
 import org.springframework.http.*;
 import org.springframework.test.context.ActiveProfiles;
@@ -32,6 +33,7 @@ import static org.junit.jupiter.api.Assertions.*;
  */
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
 @ActiveProfiles("test")
+@AutoConfigureTestRestTemplate
 @DisplayName("API Contract Tests: Request & Response Schema Verification")
 class DebitCardApiContractTest {
 
@@ -117,18 +119,18 @@ class DebitCardApiContractTest {
 
             // Schema field presence and format checks
             assertTrue(root.hasNonNull("accountId"), "accountId must be present");
-            assertTrue(root.get("accountId").asText().startsWith("acc-"), "accountId must follow 'acc-*' format");
+            assertTrue(root.get("accountId").asString().startsWith("acc-"), "accountId must follow 'acc-*' format");
             assertTrue(root.hasNonNull("customerId"), "customerId must be present");
             assertTrue(root.hasNonNull("customerName"), "customerName must be present");
             assertTrue(root.hasNonNull("accountType"), "accountType must be present");
-            assertEquals("CHECKING", root.get("accountType").asText());
+            assertEquals("CHECKING", root.get("accountType").asString());
             assertTrue(root.hasNonNull("currency"), "currency must be present");
-            assertEquals("USD", root.get("currency").asText());
+            assertEquals("USD", root.get("currency").asString());
             assertTrue(root.hasNonNull("balance"), "balance must be present");
             assertTrue(root.get("balance").isNumber(), "balance must be a number");
             assertTrue(root.hasNonNull("availableBalance"), "availableBalance must be present");
             assertTrue(root.hasNonNull("status"), "status must be present");
-            assertEquals("ACTIVE", root.get("status").asText());
+            assertEquals("ACTIVE", root.get("status").asString());
             assertTrue(root.hasNonNull("createdAt"), "createdAt timestamp must be present");
         }
 
@@ -144,9 +146,9 @@ class DebitCardApiContractTest {
             assertTrue(response.getHeaders().getContentType().toString().contains(MediaType.APPLICATION_JSON_VALUE));
 
             JsonNode root = objectMapper.readTree(response.getBody());
-            assertEquals(testAccountId, root.get("accountId").asText());
-            assertEquals("ACTIVE", root.get("status").asText());
-            assertEquals("USD", root.get("currency").asText());
+            assertEquals(testAccountId, root.get("accountId").asString());
+            assertEquals("ACTIVE", root.get("status").asString());
+            assertEquals("USD", root.get("currency").asString());
             assertTrue(root.get("balance").asDouble() >= 0);
         }
 
@@ -165,7 +167,7 @@ class DebitCardApiContractTest {
 
             assertEquals(HttpStatus.OK, response.getStatusCode());
             JsonNode root = objectMapper.readTree(response.getBody());
-            assertEquals(testAccountId, root.get("accountId").asText());
+            assertEquals(testAccountId, root.get("accountId").asString());
             assertEquals(2250.00, root.get("balance").asDouble(), 0.01);
             assertEquals(2250.00, root.get("availableBalance").asDouble(), 0.01);
         }
@@ -194,33 +196,33 @@ class DebitCardApiContractTest {
 
             // Contract schema validation
             assertTrue(root.hasNonNull("cardId"));
-            assertTrue(root.get("cardId").asText().startsWith("crd-"));
-            assertEquals(testAccountId, root.get("accountId").asText());
-            assertTrue("Contract Issuance Test".equalsIgnoreCase(root.get("cardHolderName").asText()),
+            assertTrue(root.get("cardId").asString().startsWith("crd-"));
+            assertEquals(testAccountId, root.get("accountId").asString());
+            assertTrue("Contract Issuance Test".equalsIgnoreCase(root.get("cardHolderName").asString()),
                     "cardHolderName must match input (case-insensitive embossed representation)");
 
             // Masked card number contract: 4xxx **** **** xxxx (PCI-DSS compliant masked representation)
-            String masked = root.get("maskedCardNumber").asText();
+            String masked = root.get("maskedCardNumber").asString();
             assertTrue(masked.matches("^4\\d{3} \\*{4} \\*{4} \\d{4}$"),
                     "Masked card number must follow format '4xxx **** **** xxxx', got: " + masked);
 
             // Card token contract
             assertTrue(root.hasNonNull("cardToken"));
-            assertTrue(root.get("cardToken").asText().startsWith("tok-"));
+            assertTrue(root.get("cardToken").asString().startsWith("tok-"));
 
             // Expiry date format MM/yy
-            String expiry = root.get("expiryDate").asText();
+            String expiry = root.get("expiryDate").asString();
             assertTrue(expiry.matches("^\\d{2}/\\d{2}$"),
                     "Expiry date must match MM/yy format, got: " + expiry);
 
             // Security: CVV returned ONCE upon issuance
             assertTrue(root.hasNonNull("cvv"));
-            assertTrue(root.get("cvv").asText().matches("^\\d{3}$"), "CVV must be 3 digits");
+            assertTrue(root.get("cvv").asString().matches("^\\d{3}$"), "CVV must be 3 digits");
 
             // Enum contracts
-            assertEquals("VISA", root.get("cardNetwork").asText());
-            assertEquals("DEBIT", root.get("cardType").asText());
-            assertEquals("INACTIVE", root.get("cardStatus").asText());
+            assertEquals("VISA", root.get("cardNetwork").asString());
+            assertEquals("DEBIT", root.get("cardType").asString());
+            assertEquals("INACTIVE", root.get("cardStatus").asString());
             assertEquals(750.00, root.get("dailyLimit").asDouble(), 0.01);
         }
 
@@ -241,7 +243,7 @@ class DebitCardApiContractTest {
             assertEquals(HttpStatus.OK, response.getStatusCode());
             JsonNode root = objectMapper.readTree(response.getBody());
 
-            assertEquals("ACTIVE", root.get("cardStatus").asText());
+            assertEquals("ACTIVE", root.get("cardStatus").asString());
 
             // Strict Security Contract: CVV and PIN must NEVER be exposed after activation
             assertTrue(root.get("cvv") == null || root.get("cvv").isNull(),
@@ -260,7 +262,7 @@ class DebitCardApiContractTest {
             assertEquals(HttpStatus.OK, response.getStatusCode());
             JsonNode root = objectMapper.readTree(response.getBody());
 
-            assertEquals(testCardId, root.get("cardId").asText());
+            assertEquals(testCardId, root.get("cardId").asString());
             assertTrue(root.hasNonNull("maskedCardNumber"));
             assertTrue(root.get("cvv") == null || root.get("cvv").isNull(),
                     "CVV must be null on GET card detail");
@@ -282,7 +284,7 @@ class DebitCardApiContractTest {
 
             assertTrue(root.isArray(), "Response must be a JSON array");
             assertTrue(root.size() >= 1, "Should contain at least the issued test card");
-            assertEquals(testCardId, root.get(0).get("cardId").asText());
+            assertEquals(testCardId, root.get(0).get("cardId").asString());
         }
 
         @Test
@@ -296,7 +298,7 @@ class DebitCardApiContractTest {
             );
             assertEquals(HttpStatus.OK, freezeRes.getStatusCode());
             JsonNode freezeNode = objectMapper.readTree(freezeRes.getBody());
-            assertEquals("FROZEN", freezeNode.get("cardStatus").asText());
+            assertEquals("FROZEN", freezeNode.get("cardStatus").asString());
 
             // Unfreeze
             ResponseEntity<String> unfreezeRes = restTemplate.postForEntity(
@@ -306,7 +308,7 @@ class DebitCardApiContractTest {
             );
             assertEquals(HttpStatus.OK, unfreezeRes.getStatusCode());
             JsonNode unfreezeNode = objectMapper.readTree(unfreezeRes.getBody());
-            assertEquals("ACTIVE", unfreezeNode.get("cardStatus").asText());
+            assertEquals("ACTIVE", unfreezeNode.get("cardStatus").asString());
         }
 
         @Test
@@ -367,14 +369,14 @@ class DebitCardApiContractTest {
             assertEquals(HttpStatus.OK, response.getStatusCode());
             JsonNode root = objectMapper.readTree(response.getBody());
 
-            assertEquals("APPROVED", root.get("status").asText());
+            assertEquals("APPROVED", root.get("status").asString());
             assertTrue(root.hasNonNull("approvalCode"), "approvalCode must be present on APPROVED");
-            assertTrue(root.get("approvalCode").asText().startsWith("AUTH"),
-                    "approvalCode must start with 'AUTH', got: " + root.get("approvalCode").asText());
+            assertTrue(root.get("approvalCode").asString().startsWith("AUTH"),
+                    "approvalCode must start with 'AUTH', got: " + root.get("approvalCode").asString());
             assertTrue(root.hasNonNull("transactionId"));
-            assertTrue(root.get("transactionId").asText().startsWith("txn-"));
+            assertTrue(root.get("transactionId").asString().startsWith("txn-"));
             assertEquals(50.00, root.get("amount").asDouble(), 0.01);
-            assertEquals("USD", root.get("currency").asText());
+            assertEquals("USD", root.get("currency").asString());
             assertTrue(root.hasNonNull("remainingDailyLimit"));
             assertTrue(root.get("remainingDailyLimit").isNumber());
         }
@@ -400,11 +402,11 @@ class DebitCardApiContractTest {
             assertEquals(HttpStatus.OK, response.getStatusCode());
             JsonNode root = objectMapper.readTree(response.getBody());
 
-            assertEquals("DECLINED", root.get("status").asText());
+            assertEquals("DECLINED", root.get("status").asString());
             assertTrue(root.get("approvalCode") == null || root.get("approvalCode").isNull(),
                     "approvalCode must be null on DECLINED");
             assertTrue(root.hasNonNull("declineReason"));
-            assertEquals("INVALID_PIN", root.get("declineReason").asText());
+            assertEquals("INVALID_PIN", root.get("declineReason").asString());
             assertTrue(root.hasNonNull("transactionId"));
         }
 
@@ -464,9 +466,9 @@ class DebitCardApiContractTest {
 
             // Standard Error Contract verification
             assertEquals(400, root.get("status").asInt());
-            assertEquals("Validation Failed", root.get("error").asText());
+            assertEquals("Validation Failed", root.get("error").asString());
             assertTrue(root.hasNonNull("message"));
-            assertEquals("/api/v1/accounts", root.get("path").asText());
+            assertEquals("/api/v1/accounts", root.get("path").asString());
             assertTrue(root.hasNonNull("timestamp"));
 
             // Details field with individual validation errors
@@ -491,9 +493,9 @@ class DebitCardApiContractTest {
             JsonNode root = objectMapper.readTree(response.getBody());
 
             assertEquals(404, root.get("status").asInt());
-            assertEquals("Not Found", root.get("error").asText());
+            assertEquals("Not Found", root.get("error").asString());
             assertTrue(root.hasNonNull("message"));
-            assertEquals("/api/v1/accounts/acc-non-existent-99999", root.get("path").asText());
+            assertEquals("/api/v1/accounts/acc-non-existent-99999", root.get("path").asString());
             assertTrue(root.hasNonNull("timestamp"));
         }
     }

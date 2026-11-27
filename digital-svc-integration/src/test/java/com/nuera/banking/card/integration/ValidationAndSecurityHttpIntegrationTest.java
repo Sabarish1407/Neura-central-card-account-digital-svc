@@ -19,6 +19,9 @@ import java.math.BigDecimal;
 
 import static org.junit.jupiter.api.Assertions.*;
 
+import org.junit.jupiter.api.Tag;
+
+@Tag("neuro-integration")
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
 @ActiveProfiles("test")
 @DisplayName("HTTP Integration Tests: Input Validation and Error Sanitization")

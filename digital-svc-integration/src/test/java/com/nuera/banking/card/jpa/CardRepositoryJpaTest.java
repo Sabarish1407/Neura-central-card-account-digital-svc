@@ -16,6 +16,9 @@ import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.*;
 
+import org.junit.jupiter.api.Tag;
+
+@Tag("neuro-integration")
 @DataJpaTest
 @ActiveProfiles("test")
 @DisplayName("JPA Tests: CardRepository")

@@ -12,6 +12,9 @@ import org.springframework.test.context.ActiveProfiles;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
+import org.junit.jupiter.api.Tag;
+
+@Tag("neuro-integration")
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
 @ActiveProfiles("demo")
 @DisplayName("HTTP Integration Tests: Demo Profile and Swagger Disablement")

@@ -10,6 +10,8 @@ public class TransactionAuthorizationResponse {
 
     private boolean authorized;
     private String authorizationCode;
+    @JsonProperty("approvalCode")
+    private String approvalCode;
     private String transactionId;
     private TransactionStatus status;
     private DeclineReason declineReason;
@@ -27,6 +29,7 @@ public class TransactionAuthorizationResponse {
         TransactionAuthorizationResponse res = new TransactionAuthorizationResponse();
         res.setAuthorized(true);
         res.setAuthorizationCode(authorizationCode);
+        res.setApprovalCode(authorizationCode);
         res.setTransactionId(transactionId);
         res.setStatus(TransactionStatus.APPROVED);
         res.setDeclineReason(DeclineReason.NONE);
@@ -40,6 +43,7 @@ public class TransactionAuthorizationResponse {
         TransactionAuthorizationResponse res = new TransactionAuthorizationResponse();
         res.setAuthorized(false);
         res.setAuthorizationCode(null);
+        res.setApprovalCode(null);
         res.setTransactionId(transactionId);
         res.setStatus(TransactionStatus.DECLINED);
         res.setDeclineReason(reason);
@@ -65,14 +69,12 @@ public class TransactionAuthorizationResponse {
         this.authorizationCode = authorizationCode;
     }
 
-    @JsonProperty("approvalCode")
     public String getApprovalCode() {
-        return authorizationCode;
+        return approvalCode;
     }
 
-    @JsonProperty("approvalCode")
     public void setApprovalCode(String approvalCode) {
-        this.authorizationCode = approvalCode;
+        this.approvalCode = approvalCode;
     }
 
     public String getTransactionId() {

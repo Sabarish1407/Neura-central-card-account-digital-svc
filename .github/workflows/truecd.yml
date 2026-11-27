@@ -162,7 +162,7 @@ jobs:
           java-version: '21'
           cache: maven
       - run: chmod +x mvnw
-      - run: ./mvnw -B -ntp -DskipTests package
+      - run: ./mvnw -B -ntp -pl digital-svc-main -am -DskipTests package
       - name: Image tag
         id: tag
         env:

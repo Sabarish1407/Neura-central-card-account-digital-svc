@@ -1,5 +1,6 @@
 package com.nuera.banking.card.model.dto;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
 import com.nuera.banking.card.model.enums.DeclineReason;
 import com.nuera.banking.card.model.enums.TransactionStatus;
 import java.math.BigDecimal;
@@ -64,10 +65,12 @@ public class TransactionAuthorizationResponse {
         this.authorizationCode = authorizationCode;
     }
 
+    @JsonProperty("approvalCode")
     public String getApprovalCode() {
         return authorizationCode;
     }
 
+    @JsonProperty("approvalCode")
     public void setApprovalCode(String approvalCode) {
         this.authorizationCode = approvalCode;
     }

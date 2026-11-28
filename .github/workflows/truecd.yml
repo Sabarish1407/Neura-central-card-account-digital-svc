@@ -79,7 +79,7 @@ jobs:
         with:
           name: toolchain-reports
           path: |
-            target/classes
+            **/target/classes
           if-no-files-found: warn
   unit:
     name: 2 Unit
@@ -144,8 +144,8 @@ jobs:
         with:
           name: unit-reports
           path: |
-            target/surefire-reports
-            target/site/jacoco
+            **/target/surefire-reports
+            **/target/site/jacoco
           if-no-files-found: warn
   component:
     name: 3 Component
@@ -205,7 +205,7 @@ jobs:
         with:
           name: component-reports
           path: |
-            target/surefire-reports
+            **/target/surefire-reports
           if-no-files-found: warn
   integration:
     name: 5 Integration
@@ -265,7 +265,7 @@ jobs:
         with:
           name: integration-reports
           path: |
-            target/surefire-reports
+            **/target/surefire-reports
           if-no-files-found: warn
   security:
     name: 6 Security

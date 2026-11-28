@@ -18,7 +18,7 @@ RUN ./mvnw -pl digital-svc-main -am dependency:go-offline -B
 COPY digital-svc-model/src digital-svc-model/src
 COPY digital-svc-main/src digital-svc-main/src
 RUN ./mvnw -pl digital-svc-main -am clean package -DskipTests -B && \
-    cp digital-svc-main/target/digital-svc-main-*.jar /workspace/app.jar
+    cp digital-svc-main/target/digital-svc-main-*-exec.jar /workspace/app.jar
 
 # Stage 2: Runtime image
 FROM eclipse-temurin:21-jre-alpine
